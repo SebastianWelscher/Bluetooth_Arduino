@@ -4,92 +4,55 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.Set;
-
 public class MainActivity extends AppCompatActivity {
 
-    BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
     Switch bluetoothSwitch;
+    Button searchButton;
     Boolean isActive;
     TextView status;
     ListView deviceList;
-    public static  String EXTRA_ADDRESS = "device_address";
-
-    private final BroadcastReceiver receiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if(BluetoothDevice.ACTION_FOUND.equals(action)){
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                String deviceName = device.getName();
-                String deviceHardwareAddress = device.getAddress();
-            }
-        }
-    };
-
-    private void pairedDevicesList(){
-        Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
-        ArrayList list = new ArrayList();
-
-        if(pairedDevices.size() > 0){
-            for(BluetoothDevice device : pairedDevices){
-                String deviceName = device.getName();
-                String deviceHardwareAddress = device.getAddress();
-                list.add(deviceName + "\n" + deviceHardwareAddress);
-            }
-        }
-       final ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1,list);
-        deviceList.setAdapter(adapter);
-        deviceList.setOnItemClickListener(myClicklistener);
-
-    }
-
-    private AdapterView.OnItemClickListener myClicklistener = new AdapterView.OnItemClickListener() {
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            String info = ((TextView) view).getText().toString();
-            String address = info.substring(info.length() -17);
-
-            Intent i = new Intent(MainActivity.this, ledControl.class);
-            i.putExtra(EXTRA_ADDRESS,address);
-            startActivity(i);
-        }
-    };
+    BluetoothHelper bluetoothHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        isActive = false;
 
-        if(bluetoothAdapter == null){
-            // not implemented yet
-        }
+        isActive = false;
 
         deviceList = (ListView)findViewById(R.id.deviceList);
 
+        bluetoothHelper = new BluetoothHelper(this,deviceList);
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        registerReceiver(receiver,filter);
+        registerReceiver(bluetoothHelper.receiver,filter);
 
         status = (TextView)findViewById(R.id.statusText);
         status.setText("aus");
         bluetoothSwitch = (Switch)findViewById(R.id.bluetooth_switch);
+
+        searchButton = (Button)findViewById(R.id.searchButton);
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                 bluetoothHelper.pairedDevicesList();
+            }
+        });
+
+        if(bluetoothHelper.bluetoothAdapter.isEnabled()){
+            bluetoothSwitch.setChecked(true);
+        }else{
+            bluetoothSwitch.setChecked(false);
+        }
 
         bluetoothSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -97,27 +60,25 @@ public class MainActivity extends AppCompatActivity {
                 if(isChecked){
                     isActive = true;
                     status.setText("an");
-                    if(!bluetoothAdapter.isEnabled()){
+                    if(!bluetoothHelper.bluetoothAdapter.isEnabled()){
                         Intent enableBTIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                        startActivityForResult(enableBTIntent,0);
+                        startActivityForResult(enableBTIntent,1);
                     }
                 }
                 else{
                     isActive = false;
                     status.setText("aus");
-                    if(bluetoothAdapter.isEnabled()){
-                       bluetoothAdapter.disable();
+                    if(bluetoothHelper.bluetoothAdapter.isEnabled()){
+                        bluetoothHelper.bluetoothAdapter.disable();
                     }
                 }
             }
         });
-
-
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(receiver);
+        unregisterReceiver(bluetoothHelper.receiver);
     }
 }
