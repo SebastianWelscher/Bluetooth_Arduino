@@ -3,6 +3,7 @@ package com.example.bluetoothchat;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -15,13 +16,18 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Set;
 
-class BluetoothHelper {
+class BluetoothHelper extends Thread{
 
     Activity _activity;
 
     BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     Boolean _isActive;
     ListView _deviceList;
+
+    private CommsThread commsThread;
+
+
+    private final static String UUID = "00001101-0000-1000-8000-00805F9B34FB";   // Serial UUID
 
     public static  String EXTRA_ADDRESS = "device_address";
 
