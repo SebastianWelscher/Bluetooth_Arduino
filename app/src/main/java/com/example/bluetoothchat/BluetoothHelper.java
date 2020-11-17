@@ -31,9 +31,8 @@ class BluetoothHelper extends Thread{
 
     public static  String EXTRA_ADDRESS = "device_address";
 
-    BluetoothHelper(Activity activity,ListView deviceList){
+    BluetoothHelper(Activity activity){
         this._activity = activity;
-        this._deviceList = deviceList;
     }
 
     public final BroadcastReceiver receiver = new BroadcastReceiver() {

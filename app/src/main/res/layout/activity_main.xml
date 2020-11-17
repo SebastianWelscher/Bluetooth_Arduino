@@ -44,16 +44,6 @@
         app:layout_constraintTop_toBottomOf="@+id/bluetooth_switch"
         app:layout_constraintVertical_bias="0.077" />
 
-    <ListView
-        android:id="@+id/deviceList"
-        android:layout_width="409dp"
-        android:layout_height="379dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/statusText"
-        app:layout_constraintVertical_bias="0.36" />
-
     <TextView
         android:id="@+id/textView3"
         android:layout_width="wrap_content"

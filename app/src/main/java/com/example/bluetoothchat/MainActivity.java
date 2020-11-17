@@ -1,5 +1,6 @@
 package com.example.bluetoothchat;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.bluetooth.BluetoothAdapter;
@@ -25,6 +26,18 @@ public class MainActivity extends AppCompatActivity {
     ListView deviceList;
     BluetoothHelper bluetoothHelper;
 
+    static Handler UIUpdater = new Handler(){
+
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            int numOfBytesReceived = msg.arg1;
+            byte[] buffer = (byte[])msg.obj;
+            String strReceived = new String(buffer);
+            strReceived = strReceived.substring(0,numOfBytesReceived);
+
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,12 +45,10 @@ public class MainActivity extends AppCompatActivity {
 
         isActive = false;
 
-        deviceList = (ListView)findViewById(R.id.deviceList);
 
-        bluetoothHelper = new BluetoothHelper(this,deviceList);
+        bluetoothHelper = new BluetoothHelper(this);
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         registerReceiver(bluetoothHelper.receiver,filter);
-
         status = (TextView)findViewById(R.id.statusText);
         status.setText("aus");
         bluetoothSwitch = (Switch)findViewById(R.id.bluetooth_switch);
